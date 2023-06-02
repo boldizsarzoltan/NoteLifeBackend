@@ -5,6 +5,9 @@ fn index() -> &'static str {
     "Hello, world!"
 }
 
+mod cors;
+mod repository;
+
 #[launch]
 fn rocket() -> _ {
     rocket::build().mount("/", routes![index])
