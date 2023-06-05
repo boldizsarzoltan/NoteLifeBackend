@@ -4,8 +4,8 @@ use crate::schema::reminders::dsl::*;
 use diesel::prelude::{QueryResult, Selectable, Insertable};
 use crate::repository::types::{RepositoryResult};
 use chrono::NaiveDateTime;
-use diesel::Queryable;
-use crate::dto::reminder::NewReminderDTO;
+use diesel::prelude::*;
+use crate::dto::reminder::{NewReminderDTO, ReminderDTO};
 use diesel::RunQueryDsl;
 
 #[derive(Queryable, Selectable, Debug)]
@@ -28,7 +28,8 @@ pub struct NewReminder {
     pub end_time: NaiveDateTime,
 }
 
-pub fn get_all() -> RepositoryResult<Vec<Reminder>, String> {
+
+pub fn get_all_reminders() -> RepositoryResult<Vec<Reminder>, String> {
     let connection = &mut get_connection();
     let results = reminders.load::<Reminder>(connection);
     match results {
@@ -40,7 +41,7 @@ pub fn get_all() -> RepositoryResult<Vec<Reminder>, String> {
     }
 }
 
-pub fn insert(new_reminder_dto: NewReminderDTO) -> RepositoryResult<Reminder, String> {
+pub fn insert_reminder(new_reminder_dto: NewReminderDTO) -> RepositoryResult<Reminder, String> {
     let new_reminder: NewReminder = new_reminder_dto.into();
     let new_reminders = vec![new_reminder];
     let connection = &mut get_connection();
@@ -58,26 +59,34 @@ pub fn insert(new_reminder_dto: NewReminderDTO) -> RepositoryResult<Reminder, St
     }
 }
 
-// pub fn update(update_todo: Todo) -> Todo {
-//     let connection = &mut get_connection();
+pub fn update_reminder(update_reminder: ReminderDTO) -> RepositoryResult<Reminder, String> {
+    let connection = &mut get_connection();
 
-//     let todo = diesel::update(todos.filter(id.eq(update_todo.id)))
-//         .set((
-//             title.eq(update_todo.title.clone()),
-//             visibility.eq(update_todo.visibility),
-//             description.eq(update_todo.description.clone()),
-//         ))
-//         .get_result(connection)
-//         .expect("Cannot update todo");
+    let updated_row = diesel::update(reminders.filter(id.eq(update_reminder.id)))
+        .set((
+            title.eq(update_reminder.title.clone()),
+            description.eq(update_reminder.description.clone()),
+            start_time.eq(update_reminder.start_time.clone()),
+            end_time.eq(update_reminder.end_time.clone())
+        ))
+        .get_result(connection)
+        .expect("Cannot update reminder");
+    RepositoryResult::Ok(updated_row)
+}
 
-//     return todo;
-// }
+pub fn delete_reminder(reminder_id: i32) -> RepositoryResult<String, String>  {
+    let connection = &mut get_connection();
+    let num_deleted = diesel::delete(reminders.filter(id.eq(reminder_id)))
+        .execute(connection)
+        .expect("Error deleting todo");
 
-// pub fn delete(todo_id: i32) -> bool {
-//     let connection = &mut get_connection();
-//     let num_deleted = diesel::delete(todos.filter(id.eq(todo_id)))
-//         .execute(connection)
-//         .expect("Error deleting todo");
-
-//     num_deleted != 0
-// }
+    match num_deleted {
+        1 => {
+            RepositoryResult::Ok(String::from("Ok"))
+        }
+        num => {
+            error!("Numebr of delted rows is {}", num);
+            RepositoryResult::Err(String::from("Database delete failed"))
+        },
+    }
+}
