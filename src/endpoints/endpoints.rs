@@ -45,7 +45,7 @@ pub async fn update_reminder_endpoint(update_reminder_variable: Json<ReminderDTO
 
 #[delete("/<reminder_id>")]
 pub async fn delete_reminder_endpoint(reminder_id: i32) -> Result<String, String> {
-    let reminder = delete_reminder(reminder_id);
+    let reminder: RepositoryResult<String, String> = delete_reminder(reminder_id);
     match reminder {
         RepositoryResult::Ok(response) => Ok(response),
         RepositoryResult::Err(message) => Err(message)

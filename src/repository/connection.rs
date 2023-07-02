@@ -4,9 +4,20 @@ use dotenvy::dotenv;
 use std::env;
 
 pub fn get_connection() -> PgConnection {
-    dotenv().ok();
+    dotenv().ok();  
 
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let db_host = env::var("POSTGRES_HOST").expect("POSTGRES_HOST not set");
+    let db_port = env::var("POSTGRES_PORT").expect("POSTGRES_PORT not set");
+    let db_user = env::var("POSTGRES_USER").expect("POSTGRES_USER not set");
+    let db_password = env::var("POSTGRES_PASSWORD").expect("POSTGRES_PASSWORD not set");
+    let db_name = env::var("POSTGRES_DATABASE").expect("POSTGRES_DATABASE not set");
+
+    // Compose the database URL
+    let database_url = format!(
+        "postgresql://{}:{}@{}:{}/{}",
+        db_user, db_password, db_host, db_port, db_name
+    );
+
     PgConnection::establish(&database_url)
         .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
 }
