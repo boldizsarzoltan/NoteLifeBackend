@@ -13,4 +13,4 @@ ENV ROCKET_ADDRESS=0.0.0.0
 
 RUN cargo build --release
 
-CMD bash -c "diesel setup && ./target/release/backend"
+CMD bash -c "diesel setup && ./target/release/NoteTheLifeBackend"

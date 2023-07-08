@@ -4,6 +4,11 @@ use crate::dto::reminder::{ReminderDTO, NewReminderDTO};
 use crate::repository::types::RepositoryResult;
 use chrono::Utc;
 
+#[get("/")]
+pub async fn get_test() -> Json<String> {
+    rocket::serde::json::Json(String::from("OK"))
+}
+
 #[get("/all")]
 pub async fn get_all_reminders_endpoint() -> Result<Json<Vec<ReminderDTO>>, String> {
     let reminders = get_all_reminders();
