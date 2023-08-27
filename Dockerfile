@@ -1,16 +1,29 @@
-FROM rust:latest
+FROM rust:1.69 as build
 
-RUN apt update
-RUN apt install -y libpq-dev
+# create a new empty shell project
+RUN USER=root cargo new --bin holodeck
+WORKDIR /holodeck
 
-RUN cargo install diesel_cli --no-default-features --features postgres
+# copy over your manifests
+COPY ./Cargo.lock ./Cargo.lock
+COPY ./Cargo.toml ./Cargo.toml
 
-WORKDIR /app
+# this build step will cache your dependencies
+RUN cargo build --release
+RUN rm src/*.rs
 
-COPY . .
+# copy your source tree
+COPY ./src ./src
 
-ENV ROCKET_ADDRESS=0.0.0.0
-
+# build for release
+RUN rm ./target/release/NoteTheLifeBackend*
 RUN cargo build --release
 
-CMD bash -c "diesel setup && ./target/release/NoteTheLifeBackend"
+# our final base
+FROM rust:1.69
+
+# copy the build artifact from the build stage
+COPY --from=build /holodeck/target/release/NoteTheLifeBackend .
+
+# set the startup command to run your binary
+CMD ["./NoteTheLifeBackend"]
