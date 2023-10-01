@@ -6,14 +6,14 @@ services:
     image: postgres:latest
     restart: always
     environment:
-      POSTGRES_USER: testadmin
+      POSTGRES_USER: testUser1
       POSTGRES_PASSWORD: test123
-      POSTGRES_DB: testdb
+      POSTGRES_DB: testPassword1
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres-db-data:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - 5433:5432
 volumes:
   postgres-db-data:
     name: postgres-db-data
