@@ -1,0 +1,1 @@
+drop TABLE app_user_refresh;-- This file should undo anything in `up.sql`

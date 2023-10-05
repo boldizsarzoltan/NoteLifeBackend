@@ -1,0 +1,1 @@
+drop TABLE app_user_sessions;

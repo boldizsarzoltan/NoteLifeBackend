@@ -110,3 +110,18 @@ pub fn verify_password_local(user:User, password_data:String) -> RepositoryResul
         }
     }
 }
+
+pub fn verify_by_hash(hash:String) -> RepositoryResult<User, String> {
+    let connection = &mut get_connection();
+    let result = app_users.filter(user_name.eq(hash)).first::<User>(connection);
+    print!("{:?}", result);
+    match result {
+        QueryResult::Err(error) => {
+            error!("{}", error);
+            return RepositoryResult::Err(String::from("Login failed"));
+        }
+        QueryResult::Ok(user) => {
+            return RepositoryResult::Ok(user);
+        }
+    }
+}
