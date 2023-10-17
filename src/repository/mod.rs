@@ -4,4 +4,4 @@ pub mod types;
 pub mod migrations;
 pub mod user;
 pub mod sessions;
-mod sessions_refresh;
+pub mod sessions_refresh;

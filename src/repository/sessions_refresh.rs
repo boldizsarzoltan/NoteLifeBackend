@@ -1,13 +1,13 @@
+use chrono::NaiveDateTime;
+use diesel::prelude::{Insertable, QueryResult, Selectable};
+use diesel::prelude::*;
+use diesel::RunQueryDsl;
+use crate::auth::hash::generate_random_string;
+
 use crate::repository::connection::get_connection;
+use crate::repository::types::RepositoryResult;
 use crate::schema::app_user_refresh as session_refresh_table;
 use crate::schema::app_user_refresh::dsl::*;
-use diesel::prelude::{QueryResult, Selectable, Insertable};
-use crate::repository::types::{RepositoryResult};
-use chrono::NaiveDateTime;
-use diesel::prelude::*;
-use crate::dto::reminder::{NewReminderDTO, ReminderDTO};
-use diesel::RunQueryDsl;
-use crate::repository::sessions::Session;
 
 #[derive(Queryable, Selectable, Debug)]
 #[diesel(table_name = session_refresh_table)]
@@ -41,6 +41,7 @@ pub fn find_by_refresh_token(session_token: String) -> RepositoryResult<SessionR
         .first::<SessionRefresh>(connection);
     match result {
         QueryResult::Err(error) => {
+            error!("{}", error);
             RepositoryResult::Err(String::from("Database fetch failed"))
         }
         QueryResult::Ok(query_result) => RepositoryResult::Ok(query_result),
@@ -54,6 +55,7 @@ pub fn refresh_by_refresh_token(refresh_token_data: String) -> RepositoryResult<
         .first::<SessionRefresh>(connection);
     match result {
         QueryResult::Err(error) => {
+            error!("{}", error);
             RepositoryResult::Err(String::from("Database fetch failed"))
         }
         QueryResult::Ok(query_result) => RepositoryResult::Ok(query_result),
@@ -63,7 +65,7 @@ fn create_new_refresh_by_old(old_refresh_token: SessionRefresh )
         -> RepositoryResult<SessionRefresh, String> {
     let now = chrono::Utc::now();
     let session_refresh_end = now.checked_add_signed(get_session_refresh_duration());
-    if(session_refresh_end.is_none()) {
+    if session_refresh_end.is_none() {
         return RepositoryResult::Err(String::from("New session time calculation failed"));
     }
     let session_to_be_inserted =  NewSessionRefresh {
@@ -101,7 +103,7 @@ pub fn create_session_refresh(user_id_data: i32, application_identifier_data: St
     let session_refresh_end = now.checked_add_signed(get_session_refresh_duration());
     let new_session_refresh = NewSessionRefresh {
         user_id: user_id_data,
-        refresh_token: String::from(""),
+        refresh_token: generate_random_string(64),
         application_identifier: application_identifier_data,
         is_active: Some(true),
         start_time: now.naive_utc(),
@@ -124,31 +126,27 @@ pub fn create_session_refresh(user_id_data: i32, application_identifier_data: St
     }
 }
 
-pub fn invalidate_by_user(user_id: i32) -> RepositoryResult<SessionRefresh, String> {
+pub fn invalidate_by_user(user_id_data: i32) -> RepositoryResult<SessionRefresh, String> {
     let connection = &mut get_connection();
 
     let updated_row =
-        diesel::update(app_user_refresh.filter(user_id.eq(user_id)))
-        .set((
-            is_active.eq(false)
-        ))
+        diesel::update(app_user_refresh.filter(user_id.eq(user_id_data)))
+        .set(is_active.eq(false))
         .get_result(connection)
         .expect("Cannot update reminder");
     RepositoryResult::Ok(updated_row)
 }
 
-pub fn invalidate_by_user_and_application(user_id: i32, application_identifier_data: String)
+pub fn invalidate_by_user_and_application(user_id_data: i32, application_identifier_data: String)
     -> RepositoryResult<SessionRefresh, String> {
     let connection = &mut get_connection();
 
     let updated_row =
         diesel::update(app_user_refresh
-            .filter(user_id.eq(user_id))
-            .filter(application_identifier.eq(application_identifier_data))
-        )
-            .set((
-                is_active.eq(false)
-            ))
+                .filter(user_id.eq(user_id_data))
+                .filter(application_identifier.eq(application_identifier_data))
+            )
+            .set(is_active.eq(false))
             .get_result(connection)
             .expect("Cannot update reminder");
     RepositoryResult::Ok(updated_row)

@@ -1,6 +1,8 @@
-use crate::repository::user::{NewUser, User, LoginResponse};
-use crate::auth::hash::{hash_password};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+use crate::applications::general::USER;
+use crate::auth::hash::hash_password;
+
+use crate::repository::user::{NewUser, User};
 
 #[derive(Debug,Clone, Serialize, Deserialize)]
 pub struct UserDTO {
@@ -27,16 +29,8 @@ pub struct UserLoginDTO {
 #[derive(Debug,Clone, Serialize, Deserialize)]
 pub struct LoginResponseDTO {
     pub role: String,
-    pub token: String,
-}
-
-impl From<LoginResponse> for LoginResponseDTO{
-    fn from(login_response: LoginResponse) -> Self {
-        LoginResponseDTO {
-            role: login_response.role,
-            token: login_response.token
-        }
-    }
+    pub access_token: String,
+    pub refresh_token: String,
 }
 
 impl From<User> for UserDTO {
@@ -60,23 +54,13 @@ impl From<NewUser> for NewUserDTO {
     }
 }
 
-impl From<UserDTO> for User{
-    fn from(user: UserDTO) -> Self {
-        User {
-            id: user.id,
-            user_name: user.user_name,
-            email: user.email,
-            password: user.password
-        }
-    }
-}
-
-impl From<NewUserDTO> for NewUser{
-    fn from(new_user: NewUserDTO) -> Self {
+impl From<NewUserDTO> for NewUser {
+    fn from(new_user_dto: NewUserDTO) -> Self {
         NewUser {
-            user_name: new_user.user_name,
-            email: new_user.email,
-            password: hash_password(new_user.password)
+            user_name: new_user_dto.user_name,
+            email: new_user_dto.email,
+            role: String::from(USER),
+            password: hash_password(new_user_dto.password)
         }
     }
 }
