@@ -11,8 +11,8 @@ use crate::repository::user::get_user_by_id;
 
 #[derive(Debug)]
 pub struct AuthenticatedUser {
-    user_hash: String,
-    user_id: i32
+    pub user_hash: String,
+    pub user_id: i32
 }
 
 #[derive(Debug)]
@@ -27,8 +27,7 @@ pub enum AuthError {
     InvalidSession,
     InactiveSession,
     ExpiredSession,
-    UserDoesNotHaveAccess,
-    UsernameEmailPasswordInvalid
+    UserDoesNotHaveAccess
 }
 
 #[rocket::async_trait]

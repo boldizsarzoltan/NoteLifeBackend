@@ -1,10 +1,11 @@
 use chrono::Utc;
 use rocket::serde::json::Json;
+use crate::auth::auth_guard::AuthenticatedUser;
 
-use crate::dto::users::{LoginResponseDTO, NewUserDTO, UserDTO, UserLoginDTO};
+use crate::dto::users::{GetTokenRefreshDTO, LoginResponseDTO, NewUserDTO, TokenRefreshDTO, UserDTO, UserLoginDTO};
 use crate::repository::types::RepositoryResult;
 use crate::repository::user::{get_all_users, insert_user, User};
-use crate::services::login::user_login;
+use crate::services::login::{refresh_user_token, user_login};
 use crate::services::types::ServiceResult;
 
 #[get("/all")]
@@ -37,6 +38,22 @@ pub async fn add_user_endpoint(new_user: Json<NewUserDTO>) -> Result<Json<UserDT
 pub async fn login_user_endpoint(user: Json<UserLoginDTO>) -> Result<Json<LoginResponseDTO>, String> {
     let user_info: UserLoginDTO = user.into_inner();
     let user_login_data = user_login(user_info);
+    match user_login_data {
+        ServiceResult::Ok(ok_user_login_data) => {
+            Ok(Json(ok_user_login_data))
+        },
+        ServiceResult::Err(message) => Err(message)
+    }
+}
+
+#[post("/refresh_token", format = "json", data = "<refresh_token_json>")]
+pub async fn refresh_token(refresh_token_json: Json<GetTokenRefreshDTO>, user: AuthenticatedUser) -> Result<Json<TokenRefreshDTO>, String> {
+    let refresh_token: GetTokenRefreshDTO = refresh_token_json.into_inner();
+    let user_login_data = refresh_user_token(
+        refresh_token,
+        user.user_id,
+        user.user_hash
+    );
     match user_login_data {
         ServiceResult::Ok(ok_user_login_data) => {
             Ok(Json(ok_user_login_data))

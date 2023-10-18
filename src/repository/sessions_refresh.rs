@@ -61,7 +61,7 @@ pub fn refresh_by_refresh_token(refresh_token_data: String) -> RepositoryResult<
         QueryResult::Ok(query_result) => RepositoryResult::Ok(query_result),
     }
 }
-fn create_new_refresh_by_old(old_refresh_token: SessionRefresh )
+pub fn create_new_refresh_by_old(old_refresh_token: SessionRefresh )
         -> RepositoryResult<SessionRefresh, String> {
     let now = chrono::Utc::now();
     let session_refresh_end = now.checked_add_signed(get_session_refresh_duration());
@@ -125,6 +125,23 @@ pub fn create_session_refresh(user_id_data: i32, application_identifier_data: St
         }
     }
 }
+pub fn delete_refresh_session_by_id(refresh_session_id: i32) -> RepositoryResult<String, String> {
+    let connection = &mut get_connection();
+
+    let num_deleted =
+        diesel::delete(app_user_refresh.filter(id.eq(refresh_session_id)))
+            .execute(connection)
+            .expect("Cannot delete session");
+    match num_deleted {
+        1 => {
+            RepositoryResult::Ok(String::from("Ok"))
+        }
+        num => {
+            error!("Number of deleted rows is {}", num);
+            RepositoryResult::Err(String::from("Database delete failed"))
+        },
+    }
+}
 
 pub fn invalidate_by_user(user_id_data: i32) -> RepositoryResult<SessionRefresh, String> {
     let connection = &mut get_connection();
@@ -133,11 +150,11 @@ pub fn invalidate_by_user(user_id_data: i32) -> RepositoryResult<SessionRefresh,
         diesel::update(app_user_refresh.filter(user_id.eq(user_id_data)))
         .set(is_active.eq(false))
         .get_result(connection)
-        .expect("Cannot update reminder");
+        .expect("Cannot update session refresh");
     RepositoryResult::Ok(updated_row)
 }
 
-pub fn invalidate_by_user_and_application(user_id_data: i32, application_identifier_data: String)
+pub fn invalidate_refresh_by_user_and_application(user_id_data: i32, application_identifier_data: String)
     -> RepositoryResult<SessionRefresh, String> {
     let connection = &mut get_connection();
 
@@ -148,6 +165,6 @@ pub fn invalidate_by_user_and_application(user_id_data: i32, application_identif
             )
             .set(is_active.eq(false))
             .get_result(connection)
-            .expect("Cannot update reminder");
+            .expect("Cannot update session refresh");
     RepositoryResult::Ok(updated_row)
 }

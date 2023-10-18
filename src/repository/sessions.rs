@@ -48,7 +48,7 @@ pub fn find_by_access_token(session_token: String) -> RepositoryResult<Session, 
     }
 }
 
-fn create_new_session_by_old(old_session: Session ) -> RepositoryResult<Session, String> {
+pub fn create_new_session_by_old(old_session: Session ) -> RepositoryResult<Session, String> {
     let now = chrono::Utc::now();
     let session_end = now.checked_add_signed(get_session_duration());
     if session_end.is_none() {
@@ -118,11 +118,11 @@ pub fn invalidate_by_user(user_id_data: i32) -> RepositoryResult<Session, String
         diesel::update(app_user_sessions.filter(user_id.eq(user_id_data)))
             .set(is_active.eq(None::<bool>))
             .get_result(connection)
-            .expect("Cannot update reminder");
+            .expect("Cannot update session");
     RepositoryResult::Ok(updated_row)
 }
 
-pub fn delete_by_id(session_id: i32) -> RepositoryResult<String, String> {
+pub fn delete_session_by_id(session_id: i32) -> RepositoryResult<String, String> {
     let connection = &mut get_connection();
 
     let num_deleted =
@@ -140,6 +140,20 @@ pub fn delete_by_id(session_id: i32) -> RepositoryResult<String, String> {
     }
 }
 
+pub fn invalidate_by_session_id(session_id: i32)
+                                          -> RepositoryResult<Session, String> {
+    let connection = &mut get_connection();
+
+    let updated_row =
+        diesel::update(app_user_sessions
+            .filter(id.eq(session_id))
+        )
+            .set(is_active.eq(None::<bool>))
+            .get_result(connection)
+            .expect("Cannot update session");
+    RepositoryResult::Ok(updated_row)
+}
+
 pub fn invalidate_by_user_and_application(user_id_data: i32, application_identifier_data: String)
                                           -> RepositoryResult<Session, String> {
     let connection = &mut get_connection();
@@ -151,7 +165,7 @@ pub fn invalidate_by_user_and_application(user_id_data: i32, application_identif
         )
             .set(is_active.eq(None::<bool>))
             .get_result(connection)
-            .expect("Cannot update reminder");
+            .expect("Cannot update session");
     RepositoryResult::Ok(updated_row)
 }
 
@@ -166,6 +180,6 @@ pub fn set_inactive_by_user_and_application(user_id_data: i32, application_ident
             )
             .set(is_active.eq(false))
             .get_result(connection)
-            .expect("Cannot update reminder");
+            .expect("Cannot update session");
     RepositoryResult::Ok(updated_row)
 }

@@ -27,6 +27,18 @@ pub struct UserLoginDTO {
 }
 
 #[derive(Debug,Clone, Serialize, Deserialize)]
+pub struct TokenRefreshDTO {
+    pub refresh_token: String,
+    pub access_token: String,
+}
+
+#[derive(Debug,Clone, Serialize, Deserialize)]
+pub struct GetTokenRefreshDTO {
+    pub refresh_token: String,
+}
+
+
+#[derive(Debug,Clone, Serialize, Deserialize)]
 pub struct LoginResponseDTO {
     pub role: String,
     pub access_token: String,
