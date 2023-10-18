@@ -74,17 +74,25 @@ pub fn update_reminder(update_reminder: ReminderDTO, user_id_data: i32) -> Repos
 
     let updated_row = diesel::update(
         reminders
-            .filter(id.eq(update_reminder.id)))
+            .filter(id.eq(update_reminder.id))
             .filter(user_id.eq(user_id_data))
+        )
         .set((
             title.eq(update_reminder.title.clone()),
             description.eq(update_reminder.description.clone()),
             start_time.eq(update_reminder.start_time.clone()),
             end_time.eq(update_reminder.end_time.clone())
         ))
-        .get_result(connection)
-        .expect("Cannot update reminder");
-    RepositoryResult::Ok(updated_row)
+        .get_result(connection);
+    match updated_row {
+        QueryResult::Err(error)=> {
+            error!("{}", error);
+            RepositoryResult::Err(String::from("Database delete failed"))
+        }
+        QueryResult::Ok(result)=> {
+            return RepositoryResult::Ok(result);
+        },
+    }
 }
 
 pub fn delete_reminder(reminder_id: i32, user_id_data: i32) -> RepositoryResult<String, String>  {

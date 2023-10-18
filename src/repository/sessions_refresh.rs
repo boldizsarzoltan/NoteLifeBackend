@@ -68,9 +68,10 @@ pub fn create_new_refresh_by_old(old_refresh_token: SessionRefresh )
     if session_refresh_end.is_none() {
         return RepositoryResult::Err(String::from("New session time calculation failed"));
     }
+    set_inactive_by_session_refresh_id(old_refresh_token.id);
     let session_to_be_inserted =  NewSessionRefresh {
         user_id: old_refresh_token.user_id,
-        refresh_token: String::from(""),
+        refresh_token: generate_random_string(64),
         application_identifier: old_refresh_token.application_identifier,
         is_active: Some(true),
         start_time: now.naive_utc(),
@@ -151,6 +152,20 @@ pub fn invalidate_by_user(user_id_data: i32) -> RepositoryResult<SessionRefresh,
         .set(is_active.eq(false))
         .get_result(connection)
         .expect("Cannot update session refresh");
+    RepositoryResult::Ok(updated_row)
+}
+
+pub fn set_inactive_by_session_refresh_id(session_refresh_id: i32)
+                                           -> RepositoryResult<SessionRefresh, String> {
+    let connection = &mut get_connection();
+
+    let updated_row =
+        diesel::update(app_user_refresh
+            .filter(id.eq(session_refresh_id))
+        )
+            .set(is_active.eq(Some(false)))
+            .get_result(connection)
+            .expect("Cannot update session");
     RepositoryResult::Ok(updated_row)
 }
 

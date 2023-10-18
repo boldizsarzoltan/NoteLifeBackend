@@ -3,7 +3,7 @@ use bcrypt::BcryptResult;
 use crate::applications::general::WEB_APPLICATION;
 use crate::auth::hash::verify_password;
 use crate::dto::users::{GetTokenRefreshDTO, LoginResponseDTO, TokenRefreshDTO, UserLoginDTO};
-use crate::repository::sessions::{create_new_session_by_old, create_session, delete_by_id, delete_session_by_id, find_by_access_token, invalidate_by_user_and_application, Session};
+use crate::repository::sessions::{create_new_session_by_old, create_session, delete_session_by_id, find_by_access_token, invalidate_by_user_and_application, Session};
 use crate::repository::sessions_refresh::{create_new_refresh_by_old, create_session_refresh, delete_refresh_session_by_id, find_by_refresh_token, invalidate_refresh_by_user_and_application, SessionRefresh};
 use crate::repository::types::RepositoryResult;
 use crate::repository::user::{get_by_email, get_by_user_name, User};
@@ -134,7 +134,7 @@ fn generate_login_dto(user: User) -> ServiceResult<LoginResponseDTO, String> {
             );
             match refresh_session {
                 RepositoryResult::Err(error) => {
-                    delete_by_id(ok_session.id);
+                    delete_session_by_id(ok_session.id);
                     return ServiceResult::Err(error);
                 },
                 RepositoryResult::Ok(ok_refresh_session) => {

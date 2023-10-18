@@ -5,6 +5,5 @@ CREATE TABLE app_user_refresh (
    application_identifier VARCHAR (255) NOT NULL,
    is_active boolean NULL,
    start_time TIMESTAMP NOT NULL,
-   end_time TIMESTAMP NOT NULL,
-   UNIQUE (application_identifier, user_id)
+   end_time TIMESTAMP NOT NULL
 );
