@@ -41,26 +41,3 @@ impl From<NewReminder> for NewReminderDTO {
         }
     }
 }
-
-impl From<ReminderDTO> for Reminder{
-    fn from(reminder: ReminderDTO) -> Self {
-        Reminder {
-            id: reminder.id, 
-            title: reminder.title,
-            description: reminder.description, 
-            start_time: reminder.start_time, 
-            end_time: reminder.end_time 
-        }
-    }
-}
-
-impl From<NewReminderDTO> for NewReminder{
-    fn from(newreminder: NewReminderDTO) -> Self {
-        NewReminder {
-            title: newreminder.title,
-            description: newreminder.description, 
-            start_time: newreminder.start_time, 
-            end_time: newreminder.end_time 
-        }
-    }
-}

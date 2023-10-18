@@ -3,22 +3,6 @@
 version = 3
 
 [[package]]
-name = "NoteTheLifeBackend"
-version = "0.1.0"
-dependencies = [
- "bcrypt",
- "chrono",
- "diesel",
- "diesel_migrations",
- "dotenv",
- "dotenvy",
- "oauth2",
- "reqwest",
- "rocket",
- "serde",
-]
-
-[[package]]
 name = "android-tzdata"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -957,6 +941,23 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "tempfile",
+]
+
+[[package]]
+name = "note_the_life_backend"
+version = "0.1.0"
+dependencies = [
+ "bcrypt",
+ "chrono",
+ "diesel",
+ "diesel_migrations",
+ "dotenv",
+ "dotenvy",
+ "oauth2",
+ "rand",
+ "reqwest",
+ "rocket",
+ "serde",
 ]
 
 [[package]]

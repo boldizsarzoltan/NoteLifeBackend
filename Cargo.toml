@@ -1,5 +1,5 @@
 [package]
-name = "NoteTheLifeBackend"
+name = "note_the_life_backend"
 version = "0.1.0"
 edition = "2021"
 
@@ -16,3 +16,4 @@ serde = { version = "1.0", features = ["derive"] }
 reqwest = { version = "0.11.18" }
 oauth2 = { version = "4.4.1" }
 bcrypt = "0.15"
+rand = "0.8.5"

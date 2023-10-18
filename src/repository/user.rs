@@ -1,13 +1,12 @@
+use diesel::prelude::{Insertable, QueryResult, Selectable};
+use diesel::prelude::*;
+use diesel::RunQueryDsl;
+
+use crate::dto::users::NewUserDTO;
 use crate::repository::connection::get_connection;
+use crate::repository::types::RepositoryResult;
 use crate::schema::app_users as users_table;
 use crate::schema::app_users::dsl::*;
-use diesel::prelude::{QueryResult, Selectable, Insertable};
-use crate::repository::types::{RepositoryResult};
-use crate::auth::hash::{hash_password, verify_password};
-use diesel::prelude::*;
-use crate::dto::users::{NewUserDTO};
-use diesel::RunQueryDsl;
-use bcrypt::{BcryptResult};
 
 #[derive(Queryable, Selectable, Debug)]
 #[diesel(table_name = users_table)]
@@ -16,6 +15,7 @@ pub struct User {
     pub user_name: String,
     pub email: String,
     pub password: String,
+    pub role: String,
 }
 
 
@@ -24,14 +24,9 @@ pub struct User {
 pub struct NewUser {
     pub user_name: String,
     pub email: String,
+    pub role: String,
     pub password: String,
 }
-
-pub struct LoginResponse {
-    pub role: String,
-    pub token: String,
-}
-
 
 pub fn get_all_users() -> RepositoryResult<Vec<User>, String> {
     let connection = &mut get_connection();
@@ -63,7 +58,7 @@ pub fn insert_user(new_user_dto: NewUserDTO) -> RepositoryResult<User, String> {
     }
 }
 
-pub fn login_by_email(email_string:String, password_data:String) -> RepositoryResult<LoginResponse, String> {
+pub fn get_by_email(email_string: String) -> RepositoryResult<User, String> {
     let connection = &mut get_connection();
     let result = app_users.filter(email.eq(email_string)).first::<User>(connection);
     match result {
@@ -72,12 +67,12 @@ pub fn login_by_email(email_string:String, password_data:String) -> RepositoryRe
             return RepositoryResult::Err(String::from("Login failed"));
         }
         QueryResult::Ok(user) => {
-            return verify_password_local(user, password_data);
+            return RepositoryResult::Ok(user);
         }
     }
 }
 
-pub fn login_by_user_name(user_name_string:String, password_data:String) -> RepositoryResult<LoginResponse, String> {
+pub fn get_by_user_name(user_name_string: String) -> RepositoryResult<User, String> {
     let connection = &mut get_connection();
     let result = app_users.filter(user_name.eq(user_name_string)).first::<User>(connection);
     match result {
@@ -86,27 +81,27 @@ pub fn login_by_user_name(user_name_string:String, password_data:String) -> Repo
             return RepositoryResult::Err(String::from("Login failed"));
         }
         QueryResult::Ok(user) => {
-            return verify_password_local(user, password_data);
+            return RepositoryResult::Ok(user);
         }
     }
 }
 
-pub fn verify_password_local(user:User, password_data:String) -> RepositoryResult<LoginResponse, String> {
-    let result = verify_password(password_data, user.password.as_str());
+pub fn get_user_by_id(user_id_data:i32) -> RepositoryResult<User, String> {
+    let connection = &mut get_connection();
+    let result = app_users
+        .filter(id.eq(user_id_data))
+        .first::<User>(connection);
     match result {
-        BcryptResult::Err(error) => {
+        QueryResult::Err(error) => {
             error!("{}", error);
-            return RepositoryResult::Err(String::from("Login failed"));
+            return RepositoryResult::Err(String::from("User not found"));
         }
-        BcryptResult::Ok(user) => {
-            if(user) {
-                let login_response = LoginResponse {
-                    role: String::from("role"),
-                    token: String::from("token")
-                };
-                return RepositoryResult::Ok(login_response);
-            }
-            return RepositoryResult::Err(String::from("Login failed"));
+        QueryResult::Ok(user) => {
+            // if user.get(0).is_none() {
+            //     return RepositoryResult::Err(String::from("User not found"));
+            // }
+            // return RepositoryResult::Ok(*user.get(0).unwrap());
+            return RepositoryResult::Ok(user);
         }
     }
 }

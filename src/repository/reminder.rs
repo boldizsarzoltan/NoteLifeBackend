@@ -16,6 +16,7 @@ pub struct Reminder {
     pub description: Option<String>,
     pub start_time: NaiveDateTime,
     pub end_time: NaiveDateTime,
+    pub user_id: i32
 }
 
 
@@ -26,12 +27,15 @@ pub struct NewReminder {
     pub description: Option<String>,
     pub start_time: NaiveDateTime,
     pub end_time: NaiveDateTime,
+    pub user_id: i32
 }
 
 
-pub fn get_all_reminders() -> RepositoryResult<Vec<Reminder>, String> {
+pub fn get_all_reminders_by_user_id(user_id_data: i32) -> RepositoryResult<Vec<Reminder>, String> {
     let connection = &mut get_connection();
-    let results = reminders.load::<Reminder>(connection);
+    let results = reminders
+        .filter(user_id.eq(user_id_data))
+        .load::<Reminder>(connection);
     match results {
         QueryResult::Err(error) => {
             error!("{}", error);
@@ -41,8 +45,14 @@ pub fn get_all_reminders() -> RepositoryResult<Vec<Reminder>, String> {
     }
 }
 
-pub fn insert_reminder(new_reminder_dto: NewReminderDTO) -> RepositoryResult<Reminder, String> {
-    let new_reminder: NewReminder = new_reminder_dto.into();
+pub fn insert_reminder(new_reminder_dto: NewReminderDTO, user_id_data: i32) -> RepositoryResult<Reminder, String> {
+    let new_reminder  = NewReminder {
+        title: new_reminder_dto.title,
+        description: new_reminder_dto.description,
+        start_time: new_reminder_dto.start_time,
+        end_time: new_reminder_dto.end_time,
+        user_id: user_id_data,
+    };
     let new_reminders = vec![new_reminder];
     let connection = &mut get_connection();
     let results: Result<Vec<Reminder>, diesel::result::Error> = diesel::insert_into(reminders)
@@ -59,24 +69,39 @@ pub fn insert_reminder(new_reminder_dto: NewReminderDTO) -> RepositoryResult<Rem
     }
 }
 
-pub fn update_reminder(update_reminder: ReminderDTO) -> RepositoryResult<Reminder, String> {
+pub fn update_reminder(update_reminder: ReminderDTO, user_id_data: i32) -> RepositoryResult<Reminder, String> {
     let connection = &mut get_connection();
 
-    let updated_row = diesel::update(reminders.filter(id.eq(update_reminder.id)))
+    let updated_row = diesel::update(
+        reminders
+            .filter(id.eq(update_reminder.id))
+            .filter(user_id.eq(user_id_data))
+        )
         .set((
             title.eq(update_reminder.title.clone()),
             description.eq(update_reminder.description.clone()),
             start_time.eq(update_reminder.start_time.clone()),
             end_time.eq(update_reminder.end_time.clone())
         ))
-        .get_result(connection)
-        .expect("Cannot update reminder");
-    RepositoryResult::Ok(updated_row)
+        .get_result(connection);
+    match updated_row {
+        QueryResult::Err(error)=> {
+            error!("{}", error);
+            RepositoryResult::Err(String::from("Database delete failed"))
+        }
+        QueryResult::Ok(result)=> {
+            return RepositoryResult::Ok(result);
+        },
+    }
 }
 
-pub fn delete_reminder(reminder_id: i32) -> RepositoryResult<String, String>  {
+pub fn delete_reminder(reminder_id: i32, user_id_data: i32) -> RepositoryResult<String, String>  {
     let connection = &mut get_connection();
-    let num_deleted = diesel::delete(reminders.filter(id.eq(reminder_id)))
+    let num_deleted = diesel::delete(
+        reminders
+            .filter(id.eq(reminder_id))
+            .filter(user_id.eq(user_id_data))
+    )
         .execute(connection)
         .expect("Error deleting todo");
 
