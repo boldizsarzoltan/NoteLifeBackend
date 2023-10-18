@@ -1,0 +1,1 @@
+ALTER TABLE reminders ADD COLUMN user_id int NOT NULL CONSTRAINT reminder_user_id REFERENCES app_users(id);

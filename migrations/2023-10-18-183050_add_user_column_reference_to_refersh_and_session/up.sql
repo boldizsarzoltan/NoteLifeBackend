@@ -1,0 +1,2 @@
+ALTER TABLE app_user_refresh ADD CONSTRAINT app_user_refresh_user_id FOREIGN KEY (user_id) REFERENCES app_users(id);
+ALTER TABLE app_user_sessions ADD CONSTRAINT app_user_sessions_user_id FOREIGN KEY (user_id) REFERENCES app_users(id);

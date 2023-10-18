@@ -41,8 +41,13 @@ diesel::table! {
         description -> Nullable<Text>,
         start_time -> Timestamp,
         end_time -> Timestamp,
+        user_id -> Int4,
     }
 }
+
+diesel::joinable!(app_user_refresh -> app_users (user_id));
+diesel::joinable!(app_user_sessions -> app_users (user_id));
+diesel::joinable!(reminders -> app_users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     app_user_refresh,

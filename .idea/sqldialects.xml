@@ -3,6 +3,7 @@
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/migrations" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/migrations/2023-10-01-161538_create_users/up.sql" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/migrations/2023-10-18-183050_add_user_column_reference_to_refersh_and_session/up.sql" dialect="PostgreSQL" />
     <file url="PROJECT" dialect="PostgreSQL" />
   </component>
 </project>

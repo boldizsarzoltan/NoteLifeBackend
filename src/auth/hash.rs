@@ -1,6 +1,6 @@
-use bcrypt::{hash, verify, DEFAULT_COST, BcryptResult};
+use bcrypt::{BcryptResult, DEFAULT_COST, hash, verify};
+use rand::Rng;
 use rand::distributions::Alphanumeric;
-use rand::{Rng, thread_rng};
 
 pub fn hash_password(password: String) -> String {
     return hash(password, DEFAULT_COST).unwrap();
