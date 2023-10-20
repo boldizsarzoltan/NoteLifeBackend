@@ -1,6 +1,6 @@
 use chrono::Utc;
 use rocket::serde::json::Json;
-use crate::auth::auth_guard::AuthenticatedUser;
+use crate::auth::auth_guard::{AuthenticatedAdmin, AuthenticatedUser};
 
 use crate::dto::users::{GetTokenRefreshDTO, LoginResponseDTO, NewUserDTO, TokenRefreshDTO, UserDTO, UserLoginDTO};
 use crate::repository::types::RepositoryResult;
@@ -9,7 +9,7 @@ use crate::services::login::{refresh_user_token, user_login};
 use crate::services::types::ServiceResult;
 
 #[get("/all")]
-pub async fn get_all_users_endpoint() -> Result<Json<Vec<UserDTO>>, String> {
+pub async fn get_all_users_endpoint(admin: AuthenticatedAdmin) -> Result<Json<Vec<UserDTO>>, String> {
     let reminders = get_all_users();
     println!("{}", Utc::now().naive_utc());
     match reminders {
