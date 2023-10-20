@@ -17,7 +17,7 @@ RUN rm src/*.rs
 COPY ./src ./src
 
 # build for release
-RUN rm ./target/release/deps/NoteTheLifeBackend*
+RUN rm ./target/release/deps/note_the_life_backend*
 WORKDIR /rust_workspace/src
 RUN cargo build --release
 
@@ -27,8 +27,8 @@ FROM rust:1.69
 COPY ./migrations ./migrations
 
 # copy the build artifact from the build stage
-COPY --from=build /rust_workspace/target/release/NoteTheLifeBackend .
+COPY --from=build /rust_workspace/target/release/note_the_life_backend .
 
 # set the startup command to run your binary
-CMD ["./NoteTheLifeBackend"]
+CMD ["./note_the_life_backend"]
     

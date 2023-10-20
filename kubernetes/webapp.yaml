@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: webappdb
-        image: tifisz/rust-note-project:v1
+        image: tifisz/rust-note-project:v2
         imagePullPolicy: Always
         resources:
           limits:
