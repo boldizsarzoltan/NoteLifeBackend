@@ -1,10 +1,8 @@
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use dotenvy::dotenv;
 use std::env;
 
 pub fn get_connection() -> PgConnection {
-    dotenv().ok();  
 
     let db_host = env::var("POSTGRES_HOST").expect("POSTGRES_HOST not set");
     let db_port = env::var("POSTGRES_PORT").expect("POSTGRES_PORT not set");

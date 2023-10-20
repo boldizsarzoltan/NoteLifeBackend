@@ -13,10 +13,16 @@ use endpoints::reminders::{get_all_reminders_endpoint, add_reminder_endpoint, up
 use endpoints::users::{get_all_users_endpoint, add_user_endpoint, login_user_endpoint};
 use cors::Cors;
 use crate::endpoints::users::refresh_token;
+use dotenvy::dotenv;
 
 
 #[launch]
 async fn rocket() -> _ {
+    match std::env::var("ENV") {
+        Ok(ref env) if env == "dev" => dotenv::from_filename(".env.dev").ok(),
+        Ok(ref env) if env != "dev" => dotenv::from_filename(".env").ok(),
+        _ => dotenv().ok(),
+    };
     repository::migrations::run_migrations();
     rocket::build().attach(Cors)
     .mount("/", routes![get_test])
