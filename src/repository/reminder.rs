@@ -51,7 +51,7 @@ pub fn insert_reminder(new_reminder_dto: NewReminderDTO, user_id_data: i32) -> R
         description: new_reminder_dto.description,
         start_time: new_reminder_dto.start_time,
         end_time: new_reminder_dto.end_time,
-        user_id: user_id_data,
+        user_id: user_id_data
     };
     let new_reminders = vec![new_reminder];
     let connection = &mut get_connection();
@@ -101,7 +101,7 @@ pub fn delete_reminder(reminder_id: i32, user_id_data: i32) -> RepositoryResult<
         reminders
             .filter(id.eq(reminder_id))
             .filter(user_id.eq(user_id_data))
-    )
+        )
         .execute(connection)
         .expect("Error deleting todo");
 

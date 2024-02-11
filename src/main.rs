@@ -14,6 +14,7 @@ use endpoints::users::{get_all_users_endpoint, add_user_endpoint, login_user_end
 use cors::Cors;
 use crate::endpoints::users::refresh_token;
 use dotenvy::dotenv;
+use crate::endpoints::events::{add_user_event_endpoint, delete_event_endpoint, get_all_user_events_endpoint, update_user_event_endpoint};
 
 
 #[launch]
@@ -27,5 +28,6 @@ async fn rocket() -> _ {
     rocket::build().attach(Cors)
     .mount("/", routes![get_test])
     .mount("/reminder", routes![get_all_reminders_endpoint, add_reminder_endpoint, update_reminder_endpoint, delete_reminder_endpoint])
+    .mount("/event", routes![get_all_user_events_endpoint, add_user_event_endpoint,update_user_event_endpoint, delete_event_endpoint])
     .mount("/user", routes![get_all_users_endpoint, add_user_endpoint, login_user_endpoint, refresh_token])
 }
