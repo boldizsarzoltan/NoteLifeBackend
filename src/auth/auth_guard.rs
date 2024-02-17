@@ -1,7 +1,5 @@
 use rocket::http::Status;
-use rocket::Request;
-use rocket::request::FromRequest;
-use rocket::request::Outcome;
+use rocket::request::{Request, FromRequest, Outcome};
 
 use crate::applications::general::{ADMIN, APPLICATIONS, USER};
 use crate::auth::types::SessionResult;
@@ -39,14 +37,14 @@ impl<'a> FromRequest<'a> for AuthenticatedUser {
         }
         let session_token = request.headers().get_one("Authorization");
         if session_token.is_none() {
-            return Outcome::Failure((Status::BadRequest, AuthError::InvalidRequest));
+            return Outcome::Failure((Status::NotAcceptable, AuthError::InvalidRequest));
         }
         let correct_session_token = session_token.unwrap().to_string();
         let session = find_by_access_token(correct_session_token.clone());
             match session {
             RepositoryResult::Err(error) => {
                 error!("{}", error);
-                return Outcome::Failure((Status::BadRequest, AuthError::InvalidRequest));
+                return Outcome::Failure((Status::NotAcceptable, AuthError::InvalidRequest));
             },
             RepositoryResult::Ok(ok_session) => {
                 let auth_user = AuthenticatedUser {
@@ -68,18 +66,18 @@ impl<'a> FromRequest<'a> for AuthenticatedAdmin {
         }
         let session_token = request.headers().get_one("Authorization");
         if session_token.is_none() {
-            return Outcome::Failure((Status::BadRequest, AuthError::InvalidRequest));
+            return Outcome::Failure((Status::NotAcceptable, AuthError::InvalidRequest));
         }
         let session = find_by_access_token(session_token.unwrap().to_string());
         match session {
             RepositoryResult::Err(_error) => {
-                return Outcome::Failure((Status::BadRequest, AuthError::InvalidRequest));
+                return Outcome::Failure((Status::NotAcceptable, AuthError::InvalidRequest));
             },
             RepositoryResult::Ok(current_session) => {
                 let verified_session = verify_session(current_session);
                 match verified_session {
                     SessionResult::FatalErr(_fatal_error) => {
-                        return Outcome::Failure((Status::BadRequest, AuthError::InvalidRequest));
+                        return Outcome::Failure((Status::NotAcceptable, AuthError::InvalidRequest));
                     },
                     SessionResult::Err(_expired_session) => {
                         return Outcome::Failure((Status::NotAcceptable, AuthError::ExpiredSession));
@@ -121,7 +119,7 @@ fn verify_admin(session :Session) -> Outcome<AuthenticatedAdmin, AuthError> {
     match user {
         RepositoryResult::Err(error) => {
             error!("{}", error);
-            return Outcome::Failure((Status::BadRequest, AuthError::InvalidRequest));
+            return Outcome::Failure((Status::NotAcceptable, AuthError::InvalidRequest));
         },
         RepositoryResult::Ok(user) => {
             if String::from(ADMIN) != user.role {
@@ -141,7 +139,7 @@ fn verify_user(session :Session) -> Outcome<AuthenticatedUser, AuthError> {
     match user {
         RepositoryResult::Err(error) => {
             error!("{}", error);
-            return Outcome::Failure((Status::BadRequest, AuthError::InvalidRequest));
+            return Outcome::Failure((Status::NotAcceptable, AuthError::InvalidRequest));
         },
         RepositoryResult::Ok(user) => {
             if String::from(USER) != user.role && String::from(ADMIN) != user.role {
