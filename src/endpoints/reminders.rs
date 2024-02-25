@@ -7,12 +7,12 @@ use crate::auth::auth_guard::AuthenticatedUser;
 
 #[get("/")]
 pub async fn get_test() -> Json<String> {
-    Json(String::from("OK"))
+    Json(String::from("Cso tesooo"))
 }
 
 #[options("/all")]
 pub async fn get_all_reminders_options_endpoint() -> String {
-    String::from("Cso tesooo")
+    String::from("Ok")
 }
 
 #[get("/all")]
