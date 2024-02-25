@@ -2,7 +2,7 @@
 ENV = "dev"
 [package]
 name = "note_the_life_backend"
-version = "0.1.0"
+rust-version = "1.69.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
