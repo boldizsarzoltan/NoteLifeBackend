@@ -1,4 +1,7 @@
-/target
-./secrets
-./aws
-./idea
+target
+secrets
+aws
+.idea
+docker/postgres-db-data/pgdata
+.env
+.env.dev
