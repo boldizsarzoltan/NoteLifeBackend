@@ -12,7 +12,7 @@ pub async fn get_test() -> Json<String> {
 
 #[options("/all")]
 pub async fn get_all_reminders_options_endpoint() -> String {
-    String::from("Ok")
+    String::from("Cso tesooo")
 }
 
 #[get("/all")]
