@@ -30,7 +30,7 @@ services:
       POSTGRES_DATABASE: ${POSTGRES_DATABASE}
       ROCKET_ADDRESS: ${ROCKET_ADDRESS}
     ports:
-      - "8000:8000"
+      - "80:8000"
     depends_on:
       - postgres-db
 volumes:
