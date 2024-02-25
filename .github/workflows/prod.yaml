@@ -29,14 +29,16 @@ jobs:
             username: ${{ secrets.DOCKER_USERNAME }}
             password: ${{ secrets.DOCKER_PASSWORD }}
 
-        - name: Build and push Docker image
-          uses: docker/bake-action@v2.3.0
+        - name: Build Docker image
+          run: |
+            docker build -t rust-note-project .
+        - name: Push Docker image (optional)
+          uses: docker/push-action@v3
           with:
-            push: true
-            set: |
-              *.cache-from=type=gha
-              *.cache-to=type=gha,mode=max
-    
+            username: ${{ secrets.DOCKER_USERNAME }}
+            password: ${{ secrets.DOCKER_PASSWORD }}
+            repository: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.NOTE_LIFE_IMAGE }}  # Replace with your credentials and repo
+            tag: latest  # Or a specific tag
 
     deploy:
       needs: build
