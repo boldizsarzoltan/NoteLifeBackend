@@ -33,18 +33,18 @@ impl<'a> FromRequest<'a> for AuthenticatedUser {
     type Error = AuthError;
     async fn from_request(request: &'a Request<'_>) -> Outcome<Self, Self::Error> {
         if !request.headers().contains("Authorization")  {
-            return Outcome::Failure((Status::Unauthorized, AuthError::InvalidRequest));
+            return Outcome::Error((Status::Unauthorized, AuthError::InvalidRequest));
         }
         let session_token = request.headers().get_one("Authorization");
         if session_token.is_none() {
-            return Outcome::Failure((Status::NotAcceptable, AuthError::InvalidRequest));
+            return Outcome::Error((Status::NotAcceptable, AuthError::InvalidRequest));
         }
         let correct_session_token = session_token.unwrap().to_string();
         let session = find_by_access_token(correct_session_token.clone());
             match session {
             RepositoryResult::Err(error) => {
                 error!("{}", error);
-                return Outcome::Failure((Status::NotAcceptable, AuthError::InvalidRequest));
+                return Outcome::Error((Status::NotAcceptable, AuthError::InvalidRequest));
             },
             RepositoryResult::Ok(ok_session) => {
                 let auth_user = AuthenticatedUser {
@@ -62,25 +62,25 @@ impl<'a> FromRequest<'a> for AuthenticatedAdmin {
     type Error = AuthError;
     async fn from_request(request: &'a Request<'_>) -> Outcome<Self, Self::Error> {
         if !request.headers().contains("Authorization") {
-            return Outcome::Failure((Status::Unauthorized, AuthError::InvalidRequest));
+            return Outcome::Error((Status::Unauthorized, AuthError::InvalidRequest));
         }
         let session_token = request.headers().get_one("Authorization");
         if session_token.is_none() {
-            return Outcome::Failure((Status::NotAcceptable, AuthError::InvalidRequest));
+            return Outcome::Error((Status::NotAcceptable, AuthError::InvalidRequest));
         }
         let session = find_by_access_token(session_token.unwrap().to_string());
         match session {
             RepositoryResult::Err(_error) => {
-                return Outcome::Failure((Status::NotAcceptable, AuthError::InvalidRequest));
+                return Outcome::Error((Status::NotAcceptable, AuthError::InvalidRequest));
             },
             RepositoryResult::Ok(current_session) => {
                 let verified_session = verify_session(current_session);
                 match verified_session {
                     SessionResult::FatalErr(_fatal_error) => {
-                        return Outcome::Failure((Status::NotAcceptable, AuthError::InvalidRequest));
+                        return Outcome::Error((Status::NotAcceptable, AuthError::InvalidRequest));
                     },
                     SessionResult::Err(_expired_session) => {
-                        return Outcome::Failure((Status::NotAcceptable, AuthError::ExpiredSession));
+                        return Outcome::Error((Status::NotAcceptable, AuthError::ExpiredSession));
                     },
                     SessionResult::Ok(correct_session) => {
                         return verify_admin(correct_session);
@@ -119,11 +119,11 @@ fn verify_admin(session :Session) -> Outcome<AuthenticatedAdmin, AuthError> {
     match user {
         RepositoryResult::Err(error) => {
             error!("{}", error);
-            return Outcome::Failure((Status::NotAcceptable, AuthError::InvalidRequest));
+            return Outcome::Error((Status::NotAcceptable, AuthError::InvalidRequest));
         },
         RepositoryResult::Ok(user) => {
             if String::from(ADMIN) != user.role {
-                return Outcome::Failure((Status::Forbidden, AuthError::UserDoesNotHaveAccess));
+                return Outcome::Error((Status::Forbidden, AuthError::UserDoesNotHaveAccess));
             }
             let auth_admin = AuthenticatedAdmin{
                 user_hash: session.access_token,
@@ -139,11 +139,11 @@ fn verify_user(session :Session) -> Outcome<AuthenticatedUser, AuthError> {
     match user {
         RepositoryResult::Err(error) => {
             error!("{}", error);
-            return Outcome::Failure((Status::NotAcceptable, AuthError::InvalidRequest));
+            return Outcome::Error((Status::NotAcceptable, AuthError::InvalidRequest));
         },
         RepositoryResult::Ok(user) => {
             if String::from(USER) != user.role && String::from(ADMIN) != user.role {
-                return Outcome::Failure((Status::Forbidden, AuthError::UserDoesNotHaveAccess));
+                return Outcome::Error((Status::Forbidden, AuthError::UserDoesNotHaveAccess));
             }
             let auth_admin = AuthenticatedUser{
                 user_hash: session.access_token,

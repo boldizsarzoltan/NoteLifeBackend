@@ -9,7 +9,7 @@ use crate::repository::types::RepositoryResult;
 use crate::services::types::ServiceResult;
 
 #[get("/all")]
-pub async fn get_all_user_events_endpoint(user: AuthenticatedUser) -> Result<Json<Vec<EventDTO>>, BadRequest<String>> {
+pub async fn get_all_user_events_endpoint(user: AuthenticatedUser) -> Result<Json<Vec<EventDTO>>, BadRequest<Option<String>>> {
     let events = get_events_by_user_id(user.user_id);
     println!("{}", Utc::now().naive_utc());
     match events {
@@ -22,7 +22,7 @@ pub async fn get_all_user_events_endpoint(user: AuthenticatedUser) -> Result<Jso
 }
 
 #[post("/", format = "json", data = "<new_event>")]
-pub async fn add_user_event_endpoint(new_event: Json<NewEventDTO>, user: AuthenticatedUser) -> Result<Json<EventDTO>, BadRequest<String>> {
+pub async fn add_user_event_endpoint(new_event: Json<NewEventDTO>, user: AuthenticatedUser) -> Result<Json<EventDTO>, BadRequest<Option<String>>> {
     let new_event_struct: NewEventDTO = new_event.into_inner();
     let reminder:RepositoryResult<Event, String> = insert_event(new_event_struct, user.user_id);
     match reminder {
@@ -34,7 +34,7 @@ pub async fn add_user_event_endpoint(new_event: Json<NewEventDTO>, user: Authent
 }
 
 #[put("/", format = "json", data = "<event>")]
-pub async fn update_user_event_endpoint(event: Json<EventDTO>, user: AuthenticatedUser) -> Result<Json<EventDTO>, BadRequest<String>> {
+pub async fn update_user_event_endpoint(event: Json<EventDTO>, user: AuthenticatedUser) -> Result<Json<EventDTO>, BadRequest<Option<String>>> {
     let user_event: EventDTO = event.into_inner();
     let user_event_data = update_event(user_event, user.user_id);
     match user_event_data {
@@ -60,7 +60,7 @@ pub async fn delete_event_options_endpoint(event_id: i32) -> String {
 }
 
 #[delete("/<event_id>")]
-pub(crate) async fn delete_event_endpoint(event_id: i32, user: AuthenticatedUser) -> Result<Json<String>, BadRequest<String>> {
+pub(crate) async fn delete_event_endpoint(event_id: i32, user: AuthenticatedUser) -> Result<Json<String>, BadRequest<Option<String>>> {
     let reminder: RepositoryResult<String, String> = delete_event(event_id, user.user_id);
     match reminder {
         RepositoryResult::Ok(response) => Ok(Json(response)),

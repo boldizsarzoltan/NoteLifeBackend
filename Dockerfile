@@ -1,4 +1,4 @@
-FROM rust:1.69 as build
+FROM rust:1.76 as build
 
 ARG POSTGRES_USER
 ARG POSTGRES_PORT
@@ -39,7 +39,7 @@ WORKDIR /rust_workspace/src
 RUN cargo build --release
 
 # our final base
-FROM rust:1.69
+FROM rust:1.76
 
 COPY ./migrations ./migrations
 

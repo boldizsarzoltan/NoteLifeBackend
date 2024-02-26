@@ -16,7 +16,7 @@ pub async fn get_all_reminders_options_endpoint() -> String {
 }
 
 #[get("/all")]
-pub async fn get_all_reminders_endpoint(user: AuthenticatedUser) -> Result<Json<Vec<ReminderDTO>>, BadRequest<String>> {
+pub async fn get_all_reminders_endpoint(user: AuthenticatedUser) -> Result<Json<Vec<ReminderDTO>>, BadRequest<Option<String>>> {
     let reminders = get_all_reminders_by_user_id(user.user_id);
     println!("{:?}", user);
     match reminders {
@@ -24,13 +24,15 @@ pub async fn get_all_reminders_endpoint(user: AuthenticatedUser) -> Result<Json<
             let reminder_dtos: Vec<ReminderDTO> = reminders_from_database.into_iter().map(|reminder|reminder.into()).collect();
             Ok(Json(reminder_dtos))
         },
-        RepositoryResult::Err(message) => Err(BadRequest(Some(message)))
+        RepositoryResult::Err(message) => {
+            Err(BadRequest(Some(message)))
+        }
     }
 }
 
 
 #[post("/", format = "json", data = "<new_reminder>")]
-pub async fn add_reminder_endpoint(new_reminder: Json<NewReminderDTO>, user: AuthenticatedUser) -> Result<Json<ReminderDTO>, BadRequest<String>> {
+pub async fn add_reminder_endpoint(new_reminder: Json<NewReminderDTO>, user: AuthenticatedUser) -> Result<Json<ReminderDTO>, BadRequest<Option<String>>> {
     let new_agenda_struct = new_reminder.into_inner();
     let reminder = insert_reminder(new_agenda_struct, user.user_id);
     match reminder {
@@ -48,7 +50,7 @@ pub async fn add_reminder_options_endpoint() -> String {
 
 
 #[put("/", data = "<update_reminder_variable>")]
-pub async fn update_reminder_endpoint(update_reminder_variable: Json<ReminderDTO>, user: AuthenticatedUser) -> Result<Json<ReminderDTO>, BadRequest<String>> {
+pub async fn update_reminder_endpoint(update_reminder_variable: Json<ReminderDTO>, user: AuthenticatedUser) -> Result<Json<ReminderDTO>, BadRequest<Option<String>>> {
 
     let reminder = update_reminder(update_reminder_variable.into_inner(), user.user_id);
     match reminder {
@@ -65,7 +67,7 @@ pub async fn delete_reminder_options_endpoint(reminder_id: i32) -> String {
 }
 
 #[delete("/<reminder_id>")]
-pub async fn delete_reminder_endpoint(reminder_id: i32, user: AuthenticatedUser) -> Result<Json<String>, BadRequest<String>> {
+pub async fn delete_reminder_endpoint(reminder_id: i32, user: AuthenticatedUser) -> Result<Json<String>, BadRequest<Option<String>>> {
     let reminder: RepositoryResult<String, String> = delete_reminder(reminder_id, user.user_id);
     match reminder {
         RepositoryResult::Ok(response) => Ok(Json(response)),

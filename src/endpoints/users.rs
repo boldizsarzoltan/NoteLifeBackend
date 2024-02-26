@@ -25,7 +25,7 @@ pub async fn get_all_users_endpoint(admin: AuthenticatedAdmin) -> Result<Json<Ve
 
 
 #[post("/", format = "json", data = "<new_user>")]
-pub async fn add_user_endpoint(new_user: Json<NewUserDTO>) -> Result<Json<UserDTO>, BadRequest<String>> {
+pub async fn add_user_endpoint(new_user: Json<NewUserDTO>) -> Result<Json<UserDTO>, BadRequest<Option<String>>> {
     let new_user_struct: NewUserDTO = new_user.into_inner();
     println!("{:?}", new_user_struct);
     let reminder:RepositoryResult<User, String> = insert_user(new_user_struct);
@@ -43,7 +43,7 @@ pub async fn add_user_options_endpoint() -> String {
 }
 
 #[post("/login", format = "json", data = "<user>")]
-pub async fn login_user_endpoint(user: Json<UserLoginDTO>) -> Result<Json<LoginResponseDTO>, BadRequest<String>> {
+pub async fn login_user_endpoint(user: Json<UserLoginDTO>) -> Result<Json<LoginResponseDTO>, BadRequest<Option<String>>> {
     let user_info: UserLoginDTO = user.into_inner();
     let user_login_data = user_login(user_info);
     match user_login_data {
@@ -60,7 +60,7 @@ pub async fn login_user_options_endpoint() -> String {
 }
 
 #[post("/refresh_token", format = "json", data = "<refresh_token_json>")]
-pub async fn refresh_token(refresh_token_json: Json<GetTokenRefreshDTO>, user: AuthenticatedUser) -> Result<Json<TokenRefreshDTO>, Unauthorized<String>> {
+pub async fn refresh_token(refresh_token_json: Json<GetTokenRefreshDTO>, user: AuthenticatedUser) -> Result<Json<TokenRefreshDTO>, Unauthorized<Option<String>>> {
     let refresh_token: GetTokenRefreshDTO = refresh_token_json.into_inner();
     let user_login_data = refresh_user_token(
         refresh_token,
