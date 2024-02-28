@@ -20,7 +20,7 @@ services:
     stdin_open: true
     tty: true
     container_name: note_life_backend
-    image: tifisz/rust-note-project
+    image: tifisz/rust-note-project:latest
     environment:
       ENV: prod
       POSTGRES_HOST: postgres-db
@@ -30,9 +30,17 @@ services:
       POSTGRES_DATABASE: ${POSTGRES_DATABASE}
       ROCKET_ADDRESS: ${ROCKET_ADDRESS}
     ports:
-      - "80:8000"
+      - "8000:8000"
     depends_on:
       - postgres-db
+#  nginx:
+#    image: nginx:1.25.0
+#    ports:
+#      - "8001:8000"
+#    volumes:
+#      - ../nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+#    depends_on:
+#      - note_life_backend
 volumes:
   postgres-db-data:
     driver: local

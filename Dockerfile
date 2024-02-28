@@ -54,6 +54,8 @@ ENV POSTGRES_HOST=${POSTGRES_HOST}
 ARG ROCKET_ADDRESS
 ENV ROCKET_ADDRESS=${ROCKET_ADDRESS}
 
+WORKDIR /rust_workspace
+
 # copy the build artifact from the build stage
 COPY --from=build /rust_workspace/target/release/note_the_life_backend .
 EXPOSE 8000
